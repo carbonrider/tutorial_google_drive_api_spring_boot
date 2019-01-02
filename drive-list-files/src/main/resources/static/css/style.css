@@ -1,0 +1,21 @@
+html {
+    min-height: 100%;
+    font-family: sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+body {
+    background: linear-gradient(to bottom right, #3D4258, #6670A0, #9688B4);
+    line-height: 1.5;
+    font-size: 18px;
+}
+
+#pages {
+	max-width: 500px;
+	margin: 0 auto;
+}
+
+.page {
+	background: #cfcfcf;
+}
+
