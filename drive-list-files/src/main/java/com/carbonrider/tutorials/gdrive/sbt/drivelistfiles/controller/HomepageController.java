@@ -6,7 +6,6 @@ package com.carbonrider.tutorials.gdrive.sbt.drivelistfiles.controller;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -50,7 +49,11 @@ public class HomepageController {
 	private static HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
 	private static JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 
-	private static final List<String> SCOPES = Collections.singletonList(DriveScopes.DRIVE);
+	// private static final List<String> SCOPES =
+	// Collections.singletonList(DriveScopes.DRIVE);
+
+	private static final List<String> SCOPES = Arrays.asList(DriveScopes.DRIVE,
+			"https://www.googleapis.com/auth/drive.install");
 
 	private static final String USER_IDENTIFIER_KEY = "MY_DUMMY_USER";
 
@@ -168,21 +171,20 @@ public class HomepageController {
 
 		return responseList;
 	}
-	
-	@PostMapping(value= {"/makepublic/{fileId}"}, produces = {"application/json"})
-	public @ResponseBody Message makePublic(@PathVariable(name="fileId")String fileId) throws Exception {
+
+	@PostMapping(value = { "/makepublic/{fileId}" }, produces = { "application/json" })
+	public @ResponseBody Message makePublic(@PathVariable(name = "fileId") String fileId) throws Exception {
 		Credential cred = flow.loadCredential(USER_IDENTIFIER_KEY);
 
 		Drive drive = new Drive.Builder(HTTP_TRANSPORT, JSON_FACTORY, cred)
 				.setApplicationName("googledrivespringbootexample").build();
-		
+
 		Permission permission = new Permission();
 		permission.setType("anyone");
 		permission.setRole("reader");
-		
+
 		drive.permissions().create(fileId, permission).execute();
-		
-		
+
 		Message message = new Message();
 		message.setMessage("Permission has been successfully granted.");
 		return message;
