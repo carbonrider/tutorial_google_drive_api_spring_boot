@@ -26,7 +26,10 @@ import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeRequestUrl;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
+import com.google.api.client.googleapis.services.CommonGoogleClientRequestInitializer;
+import com.google.api.client.googleapis.services.GoogleClientRequestInitializer;
 import com.google.api.client.http.FileContent;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -65,6 +68,9 @@ public class HomepageController {
 
 	@Value("${google.credentials.folder.path}")
 	private Resource credentialsFolder;
+	
+	@Value("${google.service.account.key}")
+	private Resource serviceAccountKey;
 
 	private GoogleAuthorizationCodeFlow flow;
 
@@ -220,6 +226,29 @@ public class HomepageController {
 		Message message = new Message();
 		message.setMessage("Folder has been created successfully.");
 		return message;
+	}
+	
+	@GetMapping(value = { "/servicelistfiles" }, produces = { "application/json" })
+	public @ResponseBody List<FileItemDTO> listFilesInServiceAccount() throws Exception {
+		Credential cred = GoogleCredential.fromStream(serviceAccountKey.getInputStream());
+		
+		GoogleClientRequestInitializer keyInitializer = new CommonGoogleClientRequestInitializer();
+
+		Drive drive = new Drive.Builder(HTTP_TRANSPORT, JSON_FACTORY, null).setHttpRequestInitializer(cred)
+				.setGoogleClientRequestInitializer(keyInitializer).build();
+
+		List<FileItemDTO> responseList = new ArrayList<>();
+
+		FileList fileList = drive.files().list().setFields("files(id,name,thumbnailLink)").execute();
+		for (File file : fileList.getFiles()) {
+			FileItemDTO item = new FileItemDTO();
+			item.setId(file.getId());
+			item.setName(file.getName());
+			item.setThumbnailLink(file.getThumbnailLink());
+			responseList.add(item);
+		}
+
+		return responseList;
 	}
 
 	class Message {
